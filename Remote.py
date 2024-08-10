@@ -9,7 +9,7 @@ import functools
 import configparser
 import tempfile
 
-# Get absolute path to resource, works for dev and for PyInstaller
+# get relative path to resources
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     gui_path = os.path.join(base_path, 'GUI')
@@ -20,7 +20,7 @@ def run_without_console(command):
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     subprocess.Popen(command, startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW)
 
-# Funktion zum Generieren einer Sinus-Wellenform für das gewünschte Signal mit ASK-Modulation
+# function for generating sine waveform with ASK modulation
 def generate_ask_signal_waveform(bit_sequence, symbol_duration, sample_rate, carrier_freq, amplitude):
     waveform = np.array([], dtype=np.float32)
     for bit in bit_sequence:
@@ -31,56 +31,53 @@ def generate_ask_signal_waveform(bit_sequence, symbol_duration, sample_rate, car
         waveform = np.concatenate((waveform, symbol))
     return waveform
 
-# Funktion zum Invertieren der Bit-Sequenz
+# function for inverting bit sequence
 def invert_bit_sequence(bit_sequence):
     inverted_sequence = ''.join(['1' if bit == '0' else '0' for bit in bit_sequence])
     return inverted_sequence
 
-# Funktion zum Senden der Wellenform per HackRF
+# function for sending waveform via HackRF
 def send_waveform_to_hackrf(waveform_bytes):
 
     with tempfile.NamedTemporaryFile(mode='wb', delete=False) as temp_file:
         temp_file.write(waveform_bytes)
-        temp_file.flush()  # Daten in die Datei schreiben
+        temp_file.flush()
 
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     
-    # STARTF_USESHOWWINDOW flag setzen, um das Konsolenfenster zu verstecken
         hackrf_process = subprocess.Popen(['hackrf_transfer', '-t', temp_file.name, '-f', '433975000', '-a', '1', '-x', '30'],
                                            startupinfo=startupinfo,
                                            stdout=subprocess.PIPE,
                                            stderr=subprocess.PIPE,
                                            creationflags=subprocess.CREATE_NO_WINDOW)
     
-        # Kommunikation mit dem Prozess ermöglichen
         stdout, stderr = hackrf_process.communicate()
     
-    # Die temporäre Datei im RAM wird automatisch gelöscht, wenn sie geschlossen wird
     return stdout, stderr
 
-# Funktion zum Lesen der Einstellungen aus der INI-Datei
+# function for reading settings from INI file
 def read_settings():
     config = configparser.ConfigParser()
     config.read('settings.ini')
     soft_regulation = config.getboolean('Settings', 'Soft Regulation', fallback=False)
     return soft_regulation
 
-# Funktion zum Schreiben der Einstellungen in die INI-Datei
+# function for writing settings in INI file
 def write_settings(soft_regulation):
     config = configparser.ConfigParser()
     config['Settings'] = {'Soft Regulation': '1' if soft_regulation else '0'}
     with open('settings.ini', 'w') as configfile:
         config.write(configfile)
 
-# Signalparameter
+# signal parameters
 carrier_freq = 19119  # 19,119 kHz in Hz
-symbol_duration = 1 / 1200  # 1200 Samples pro Symbol bei 1 MSps
+symbol_duration = 1 / 1200  # 1200 samples per symbol @ 1 MSps
 sample_rate = 2900000  # 2,9 MSps
-pause_samples = 71400  # Pause zwischen den Nachrichten
-amplitude = 1  # Amplitude des Trägersignals
+pause_samples = 71400  # pause between messages
+amplitude = 1  # amplitude of carrier signal
 
-# Globale Variable für "Soft Regulation"
+# global variable for "Soft Regulation"
 soft_regulation_global = read_settings()
 
 class CustomButton(QPushButton):
@@ -102,7 +99,7 @@ class TransparentWindow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.scaled = False
 
-        # Bild laden und skaliert anzeigen
+        # load picture of remote and scale it to 75% of screen size
         pixmap = QPixmap(resource_path(image_path))
         screen_geometry = QApplication.desktop().screenGeometry()
         scaled_pixmap = pixmap.scaledToHeight(int(screen_geometry.height() * 0.75))
@@ -110,20 +107,20 @@ class TransparentWindow(QWidget):
         self.label.setPixmap(scaled_pixmap)
         self.resize(scaled_pixmap.width(), scaled_pixmap.height())
         
-        # LED-Bild laden und skaliert anzeigen
+        # load LED and scale it
         led_pixmap = QPixmap(resource_path(led_image_path))
         scaled_led_pixmap = led_pixmap.scaledToHeight(int(screen_geometry.height() * 0.012))
         self.led_label = QLabel(self)
         self.led_label.setPixmap(scaled_led_pixmap)
         
-        # Berechne die Position relativ zur Fenstergröße
+        # calculate LED position relatively to scaled remote size
         led_x = int(159 * self.width() / pixmap.width())
         led_y = int(133 * self.height() / pixmap.height())
         
-        self.led_label.move(led_x, led_y)  # Position anpassen
-        self.led_label.setVisible(False)  # Die LED zunächst unsichtbar machen
+        self.led_label.move(led_x, led_y)
+        self.led_label.setVisible(False)
 
-        # Benutzerdefinierte Button-Positionen
+        # user defined button positions
         button_positions = {
             'on_off': (115, 220),
             'sun': (320, 710),
@@ -137,7 +134,7 @@ class TransparentWindow(QWidget):
             'timer1': (520, 1690),
         }
 
-        # Buttons erstellen und positionieren
+        # create buttons
         button_height = int(screen_geometry.height() * 0.060)
         for button_name, (x, y) in button_positions.items():
             button = CustomButton(resource_path(f"{button_name}.png"), resource_path(f"{button_name}_hover.png"), resource_path(f"{button_name}_pressed.png"), button_name, self)
@@ -164,9 +161,8 @@ class TransparentWindow(QWidget):
         self.exit_action.triggered.connect(sys.exit)
         
     def pair_device(self):
-        # Koppelsignal senden
-        bit_sequence = bit_sequences['Pairing'][0]  # Koppelsignal aus bit_sequences holen
-        self.send_waveform(bit_sequence)  # Signal senden
+        bit_sequence = bit_sequences['Pairing'][0]
+        self.send_waveform(bit_sequence)
 
     def mousePressEvent(self, event):
         if event.buttons() == Qt.LeftButton and not self.scaled:
@@ -193,51 +189,31 @@ class TransparentWindow(QWidget):
         
     def toggleWindowState(self):
         if self.isVisible():
-            self.hide()  # Wenn sichtbar, minimiere
+            self.hide()
         else:
-            self.show()  # Wenn nicht sichtbar, maximiere
+            self.show()
         
     def turn_off_led(self):
-        # Hier wird die LED wieder unsichtbar gemacht
         self.led_label.setVisible(False)
     
     def send_waveform(self, bit_sequence, button_name=None):
-        # Hier wird die LED sichtbar gemacht, wenn der Button geklickt wird
         self.led_label.setVisible(True)
     
-        # Bitsequenz invertieren
+        # invert bit sequence
         inverted_sequence = invert_bit_sequence(bit_sequence)
 
-        # Wellenform generieren mit ASK-Modulation
+        # generate waveform with ASK modulation
         waveform = generate_ask_signal_waveform(inverted_sequence, symbol_duration, sample_rate, carrier_freq, amplitude)
 
-        # Wellenform wiederholen und Pausen einfügen
+        # repeat waveform and insert pauses
         num_repeats = 20 if soft_regulation_global and button_name in ['brighter', 'darker', 'warm', 'cold'] else 4
         waveform_with_pause = np.concatenate([waveform, np.zeros(pause_samples)])
         repeated_waveform = np.tile(waveform_with_pause, num_repeats)
-
-        # Wellenform in RAW-Datei schreiben
-        #waveform_filename = 'ask_signal.raw'
-        #with open(waveform_filename, 'wb') as f:
-            #waveform_bytes = repeated_waveform.astype(np.float32).tobytes()
-            #f.write(waveform_bytes)
-            
-        # Wellenform als BytesIO-Objekt speichern
-        #waveform_buffer = io.BytesIO()
-        #np.save(waveform_buffer, repeated_waveform)
-        #waveform_buffer.seek(0)
-        #waveform_bytes = waveform_buffer.read()
         waveform_bytes = repeated_waveform.astype(np.float32).tobytes()
-
-        # Wellenform an HackRF übergeben
-        #send_waveform_to_hackrf(waveform_filename)
         send_waveform_to_hackrf(waveform_bytes)
 
-        # Löschen der RAW-Datei
-        #os.remove(waveform_filename)
-        
-        # Timeout setzen, um die LED nach einer bestimmten Zeit wieder auszuschalten
-        QTimer.singleShot(700, self.turn_off_led)  # 1000 ms = 1 Sekunde
+        # LED timeout
+        QTimer.singleShot(700, self.turn_off_led)  # in miliseconds
 
 class SystemTrayIcon(QSystemTrayIcon):
     def __init__(self, icon, parent=None):
@@ -268,7 +244,7 @@ class SystemTrayIcon(QSystemTrayIcon):
         self.soft_regulation_action.setChecked(soft_regulation_global)
 
 if __name__ == '__main__':
-    # Nachrichten im Bit-Format für verschiedene Buttons
+    # messages in bit format for all the buttons
     bit_sequences = {
         'on_off': ('0111011101110001000100010111011101110111000100010001000101110111011101110111011101110111011100010',),
         'sun': ('0111011101110001000100010111011101110111000100010001000101110111011101110111011101110001011100010',),
