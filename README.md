@@ -6,6 +6,13 @@ This Python code creates a software representation of the remote for the Vatato 
 
 ![Vatato Edge Light](README/Vatato.jpg)
 
+It has all the features of its hardware remote, including 'Pairing' the remote with a new lamp (which is accomplished by pressing on the hardware remote simultaneously) 
 
+## Usage
+By default this software remote starts minimized as a SysTray icon:
 
+![SysTray-Icon](README/Systray.png)
 
+A double click on the SysTray icon maximizes the remote:
+
+![GUI](README/Remote.png)
