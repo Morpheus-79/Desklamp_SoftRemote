@@ -6,13 +6,17 @@ This Python code creates a software representation of the remote for the Vatato 
 
 ![Vatato Edge Light](README/Vatato.jpg)
 
-It has all the features of its hardware remote, including 'Pairing' the remote with a new lamp (which is accomplished by pressing on the hardware remote simultaneously) 
+It has all the features of its hardware remote, including 'Pairing' the remote with a new lamp (which on the hardware remote is achieved by pressing the top two buttons simultaneously) and 'Soft Regulation' (achievable on the hardware remote by pressing dark/bright/cold/warm buttons for a longer time).
 
 ## Usage
 By default this software remote starts minimized as a SysTray icon:
 
 ![SysTray-Icon](README/Systray.png)
 
-A double click on the SysTray icon maximizes the remote:
+A double click on the icon maximizes the GUI for the remote. With a right click on the remote you'll get a context menu:
 
 ![GUI](README/Remote.png)
+
+... where you can switch 'Soft Regulation' on/off (which is saved inside the *settings.ini* and remembered on the next start), pair the remote with a new lamp or close the software.
+
+A double click onto the remote minimizes it back to a SysTray icon.
