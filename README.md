@@ -6,7 +6,7 @@ This Python code creates a software representation of the remote for the Vatato 
 
 ![Vatato Edge Light](README/Vatato.jpg)
 
-It has all the features of its hardware remote, including 'Pairing' the remote with a new lamp (which on the hardware remote is achieved by pressing the top two buttons simultaneously), 'Soft Regulation' (achievable on the hardware remote by pressing dark/bright/cold/warm buttons for a longer time) and even a little status LED on the top left side.
+It has all the features of its hardware remote, including 'Pairing' the remote with a new lamp (which on the hardware remote is achieved by pressing the top two buttons simultaneously), 'Soft Regulation' (achievable on the hardware remote by pressing the dark/bright/cold/warm buttons for a longer time) and even a little status LED on the top left side.
 
 ## Usage
 The *hackrf_transfer.exe*, *hackrf.dll* and *pthreadVC2.dll* are needed in the same directory as the Python script. By default the software remote starts minimized as a SysTray icon:
